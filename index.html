@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>After Hours — a little pixel bar</title>
+<style>
+:root{color-scheme:dark;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f3dec0;background:#130e10}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 30%,#38231c 0,#1b1314 55%,#100d10 100%);min-height:100svh}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #ffe6a4;outline-offset:5px}
+main{max-width:620px;margin:auto;padding:22px 20px 18px;display:flex;align-items:center;flex-direction:column;gap:13px}header{width:100%;display:flex;justify-content:space-between;align-items:center;max-width:520px}h1{font-family:Georgia,serif;font-size:27px;font-weight:400;letter-spacing:.02em;margin:0}.tag{font-size:10px;letter-spacing:.18em;color:#cbaa82;text-transform:uppercase}.stage{position:relative;width:min(520px,calc((100svh - 224px)*1091/1442));max-width:100%;line-height:0;box-shadow:0 15px 65px #0008;border:1px solid #a771353e;overflow:hidden;background:#211610}.portrait{border:0;padding:0;display:block;width:100%;position:relative;background:none;color:inherit;line-height:0}.portrait img{display:block;width:100%;height:auto;image-rendering:pixelated}.portrait canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated}.hint{position:absolute;left:17.9%;top:36.6%;width:36px;height:36px;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .6s}.hint:before,.hint:after{content:"";position:absolute;inset:0;border:1px solid #ffdf94;opacity:.9}.hint:before{clip-path:polygon(0 0,28% 0,28% 5%,5% 5%,5% 28%,0 28%,0 0,100% 0,100% 28%,95% 28%,95% 5%,72% 5%,72% 0,100% 0,100% 100%,72% 100%,72% 95%,95% 95%,95% 72%,100% 72%,100% 100%,0 100%,0 72%,5% 72%,5% 95%,28% 95%,28% 100%,0 100%)}.hint:after{inset:6px;border-color:#fff4cb60}.playing .hint{opacity:0}.caption{position:absolute;bottom:0;left:0;right:0;padding:32px 12px 13px;background:linear-gradient(transparent,#170e12c9);text-align:center;color:#fff0d9;font-size:12px;line-height:1.4;letter-spacing:.02em;pointer-events:none;transition:opacity .5s}.playing .caption{opacity:0}.toolbar{max-width:520px;width:100%;display:flex;align-items:center;gap:10px;min-height:39px}.play{border:1px solid #b38d5c6b;background:#35241e;color:#ffe6b7;border-radius:5px;padding:9px 15px;font-size:12px;min-width:94px}.play:hover{background:#513326}.mute{padding:8px 6px;background:none;border:0;color:#cab195;font-size:12px;min-width:48px}.volume{display:flex;align-items:center;gap:7px;margin-left:auto;font-size:11px;color:#b49a7e}.volume input{width:75px;accent-color:#d3a568;height:18px}.footer{max-width:520px;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:#b49b81;line-height:1.5}.compare{font-size:11px;color:#d3b99b;background:none;border:0;padding:4px 0;text-decoration:underline;text-decoration-color:#806044;text-underline-offset:4px}.compare[aria-pressed="true"]{color:#fff1cd}.eq{display:flex;gap:3px;height:13px;align-items:center;margin-left:4px}.eq i{display:block;width:3px;height:3px;background:#c5955c}.status{min-width:0}footer{font-size:10px;color:#8f7866;letter-spacing:.06em;text-align:center}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:480px){main{padding:16px 12px;gap:11px}.stage{width:100%}h1{font-size:25px}.tag{font-size:9px}.volume input{width:65px}.toolbar{gap:6px}.footer{font-size:10px}}
+.modes{display:flex;gap:8px;max-width:520px;width:100%}.mode{flex:1;min-width:0;border:1px solid #8a68484d;border-radius:5px;background:#241a18;color:#c7ac8b;padding:8px 5px;font-size:11px}.mode[aria-pressed="true"]{color:#ffe6b7;background:#4a3024;border-color:#d2a05d}.bottle-hint{left:87%;top:60%;width:64px;height:74px}.mode:hover{background:#3c2920}.glass-hint{left:27%;top:42%;width:48px;height:36px}@media(max-width:380px){.mode{font-size:10px}}
+</style>
+</head>
+<body><main id="after-hours">
+<header><h1>After Hours</h1><span class="tag">a little pixel bar</span></header>
+<div class="stage"><button class="portrait" id="portrait" type="button" aria-label="Tap candles for jazz, bottles for norteña, or glasses for country"><img id="art" src="portrait.png" alt="A couple holding hands in a warm pixel-art bar with hanging lanterns and colorful bottles." width="1091" height="1442"><canvas id="effects" width="1091" height="1442" aria-hidden="true"></canvas><span class="hint" aria-hidden="true"></span><span class="hint bottle-hint" aria-hidden="true"></span><span class="hint glass-hint" aria-hidden="true"></span><span class="caption" id="caption">Tap candles, bottles, or glasses.</span></button></div>
+<div class="modes" role="group" aria-label="Music scenes"><button class="mode" id="jazz-mode" type="button" aria-pressed="false">Candles · Jazz</button><button class="mode" id="nortena-mode" type="button" aria-pressed="false">Bottles · Norteña</button><button class="mode" id="country-mode" type="button" aria-pressed="false">Glasses · Country</button></div>
+<div class="toolbar"><button class="play" id="play" type="button">▶ Start jazz</button><div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></div><button class="mute" id="mute" type="button" aria-pressed="false">Mute</button><label class="volume">Volume <input id="volume" aria-label="Music volume" type="range" min="0" max="100" value="55"></label></div>
+<div class="footer"><span class="status" id="status" role="status">A candle, a blush, a little sparkle.</span><button class="compare" id="compare" type="button" aria-pressed="false">Show original</button></div>
+<footer>TAP A SCENE TO PLAY · TAP IT AGAIN TO STOP</footer>
+</main>
+<script>
+(() => {
+'use strict';
+const root=document.getElementById('after-hours'), art=document.getElementById('art'), canvas=document.getElementById('effects'), ctx=canvas.getContext('2d');
+const play=document.getElementById('play'), mute=document.getElementById('mute'), volume=document.getElementById('volume'), compare=document.getElementById('compare'), status=document.getElementById('status');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const modes={jazz:{name:'Jazz',bpm:76,faceBeats:5},nortena:{name:'Norteña',bpm:120,faceBeats:8},country:{name:'Country',bpm:90,faceBeats:6}};
+let mode='jazz',BPM=76,BEAT=60/BPM,LOOP=32*BEAT;
+let ac,bus,master,noise,started=false,running=false,muted=false,original=false,startTime=0,nextLoop=0,timer,ready=false;
+let reaction=-100,sparkTime=-100,events=[],lastAutoMoment=-1,controlBusy=false;
+const masks=[];
+const bottleArt=document.createElement('img');bottleArt.src='bottles-atlas.png';
+const glassArt=document.createElement('img');glassArt.src='glasses-atlas.png';
+const midi=n=>440*Math.pow(2,(n-69)/12);
+function audioInit(){
+ ac=new (window.AudioContext||window.webkitAudioContext)();
+ master=ac.createGain();master.gain.value=.55;const compressor=ac.createDynamicsCompressor();compressor.threshold.value=-16;compressor.knee.value=18;compressor.ratio.value=3;compressor.attack.value=.004;compressor.release.value=.18;bus=ac.createGain();bus.gain.value=.66;bus.connect(compressor);compressor.connect(master);master.connect(ac.destination);
+ noise=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);let seed=31;const a=noise.getChannelData(0);for(let i=0;i<a.length;i++){seed=(seed*16807)%2147483647;a[i]=(seed/2147483647)*2-1;}
+ // A small room gives the dry chip voices a lounge-like softness.
+ const room=ac.createConvolver(),imp=ac.createBuffer(2,Math.floor(ac.sampleRate*.24),ac.sampleRate);for(let c=0;c<2;c++){let r=71+c;const d=imp.getChannelData(c);for(let i=0;i<d.length;i++){r=(r*16807)%2147483647;d[i]=(r/2147483647*2-1)*Math.pow(1-i/d.length,3)*.36;}}room.buffer=imp;const wet=ac.createGain();wet.gain.value=.16;bus.connect(room);room.connect(wet);wet.connect(compressor);
+}
+function voice(kind,n,t,d,level,pan=0){
+ const osc=ac.createOscillator(),gain=ac.createGain(),filter=ac.createBiquadFilter(),p=ac.createStereoPanner();p.pan.value=pan;filter.type='lowpass';
+ if(kind==='bass'){osc.type='triangle';filter.frequency.value=900;}
+ else if(kind==='reed'){const imag=new Float32Array([0,1,.48,.28,.19,.12,.08,.04]);osc.setPeriodicWave(ac.createPeriodicWave(new Float32Array(8),imag));filter.frequency.value=2600;level*=.58;}
+ else if(kind==='twang'){const imag=new Float32Array([0,1,.28,.19,.09,.055,.025,.012]);osc.setPeriodicWave(ac.createPeriodicWave(new Float32Array(8),imag));filter.frequency.value=2400;}
+ else if(kind==='strum'){osc.type='sawtooth';filter.frequency.value=1450;}
+ else if(kind==='glass'){osc.type='sine';filter.frequency.value=6500;}
+ else if(kind==='lead'){const real=new Float32Array(8),imag=new Float32Array([0,1,0,.20,0,.06,0,.025]);osc.setPeriodicWave(ac.createPeriodicWave(real,imag));filter.frequency.value=1500;}
+ else {osc.type='triangle';filter.frequency.value=1700;}
+ const attack=kind==='bass'?.012:kind==='strum'||kind==='glass'||kind==='twang'?.005:.025;
+ osc.frequency.setValueAtTime(midi(n)*(kind==='twang'?Math.pow(2,-35/1200):1),t);if(kind==='twang')osc.frequency.exponentialRampToValueAtTime(midi(n),t+.055);gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(level,t+attack);gain.gain.exponentialRampToValueAtTime(Math.max(.001,level*(kind==='twang'?.25:.67)),t+Math.min(.22,d*.5));gain.gain.exponentialRampToValueAtTime(.0001,t+d+.18);
+ if(kind==='reed'){const twin=ac.createOscillator(),imag=new Float32Array([0,1,.48,.28,.19,.12,.08,.04]);twin.setPeriodicWave(ac.createPeriodicWave(new Float32Array(8),imag));twin.frequency.setValueAtTime(midi(n)*Math.pow(2,7/1200),t);twin.connect(filter);twin.start(t);twin.stop(t+d+.20);}
+ osc.connect(filter);filter.connect(gain);gain.connect(p);p.connect(bus);osc.start(t);osc.stop(t+d+.20);
+}
+function drum(kind,t,accent=1){
+ const g=ac.createGain();g.connect(bus);
+ if(kind==='kick'){const o=ac.createOscillator();o.frequency.setValueAtTime(100,t);o.frequency.exponentialRampToValueAtTime(43,t+.075);g.gain.setValueAtTime(.17*accent,t);g.gain.exponentialRampToValueAtTime(.0001,t+.14);o.connect(g);o.start(t);o.stop(t+.15);return;}
+ const s=ac.createBufferSource();s.buffer=noise;const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=kind==='hat'?4700:1700;const d=kind==='hat'?.055:.15;g.gain.setValueAtTime((kind==='hat'?.018:.038)*accent,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);s.start(t);s.stop(t+d+.01);
+}
+// Eight bars: Cmaj9, A7, Dm9, G13, Em7, A7, Dm9, G13.
+const harmony=[[52,59,62,67],[49,55,59,64],[53,60,64,69],[53,59,64,69],[55,59,62,66],[49,55,58,64],[53,60,64,69],[53,59,63,68]];
+const bass=[[36,43,47,46],[45,40,43,49],[38,45,48,49],[43,50,53,42],[40,47,50,44],[45,40,43,37],[38,45,48,42],[43,50,47,35]];
+// Space between phrases, lower chip tones, ninths and chromatic approaches.
+const melody=[[[.66,64,1.5],[2.66,67,.55],[3.33,66,.38]],[[.33,64,1.6],[2.66,61,.8]],[[.66,65,1.5],[2.66,69,.65],[3.66,68,.25]],[[.33,67,.8],[1.66,65,.65],[2.66,62,1]],[[.66,66,1.6],[2.66,67,.75]],[[.33,64,1.4],[2.33,61,.75],[3.33,64,.35]],[[.66,65,1.5],[2.66,64,.55],[3.33,62,.4]],[[.33,59,.85],[1.66,63,.65],[2.66,62,1.05]]];
+function scheduleJazz(index){
+ const origin=startTime+index*LOOP;
+ for(let b=0;b<8;b++){
+  const bar=origin+b*4*BEAT;
+  for(let j=0;j<4;j++){if(j===0||j===2)voice('bass',bass[b][j],bar+j*BEAT,BEAT*1.5,.15,-.08);if(j===0||j===2)drum('kick',bar+j*BEAT,j===0?.65:.38);drum('hat',bar+j*BEAT,.48);drum('hat',bar+(j+.66)*BEAT,.62);if(j===1||j===3)drum('snare',bar+(j+.025)*BEAT,.58);}
+  voice('bass',bass[b][3],bar+3.66*BEAT,BEAT*.23,.10,-.08);
+  for(const [beat,length,amp] of [[0,1.7,.043],[2.66,1.1,.035]])harmony[b].forEach((n,k)=>voice('chord',n,bar+beat*BEAT+k*.009,length*BEAT,amp,-.22));
+  melody[b].forEach(([beat,n,len],i)=>voice('lead',n,bar+beat*BEAT,len*BEAT,.065+(i===0?.007:0),.13));
+ }
+}
+// An original sixteen-bar, 2/4 chip polka: reed-like lead and thirds,
+// alternating root/fifth bass, and short offbeat strums.
+const nortenaChords=[[55,59,62],[55,59,62],[50,54,57],[50,54,57],[50,54,57],[50,54,57],[55,59,62],[55,59,62],[48,52,55],[48,52,55],[55,59,62],[55,59,62],[50,54,57],[50,54,57],[55,59,62],[55,59,62]];
+// Uneven sung phrases and short accordion turns; leave space at cadences.
+const nortenaTune=[
+ [[0,71,.85],[1,74,.38],[1.5,71,.35]],[[0,67,1.15],[1.5,66,.3]],
+ [[0,69,.85],[1,72,.38],[1.5,74,.35]],[[0,72,.45],[.5,69,.95]],
+ [[0,66,.17],[.25,69,.17],[.5,72,.65],[1.5,74,.35]],[[0,76,.75],[1,74,.35],[1.5,69,.35]],
+ [[0,71,.8],[1,74,.7]],[[0,67,1.45]],
+ [[0,72,.8],[1,76,.4],[1.5,79,.35]],[[0,76,.85],[1,74,.35],[1.5,72,.35]],
+ [[0,71,1.15],[1.5,74,.35]],[[0,79,.5],[.75,76,.45],[1.5,74,.3]],
+ [[0,72,.85],[1,69,.35],[1.5,66,.35]],[[0,69,.65],[.75,72,.4],[1.5,74,.35]],
+ [[0,71,.85],[1,69,.4],[1.5,67,.35]],[[0,67,1.45]]
+];
+const scaleThird={64:60,66:62,67:64,69:66,71:67,72:69,74:71,76:72,78:74,79:76};
+function bottleChoice(block){const n=Math.sin((block+1)*127.1)*43758.5453;return Math.floor((n-Math.floor(n))*bottles.length);}
+function scheduleNortena(index){
+ const origin=startTime+index*LOOP;
+ for(let bar=0;bar<16;bar++){
+  const at=origin+bar*2*BEAT,chord=nortenaChords[bar],rootNote=chord[0]-12;
+  for(let b=0;b<2;b++){
+   voice('bass',rootNote+(b?7:0),at+b*BEAT,BEAT*.60,.14,-.10);
+   chord.forEach((n,k)=>voice('strum',n,at+(b+.5)*BEAT+k*.008,BEAT*.21,.021,-.28));
+   drum('kick',at+b*BEAT,b?.35:.58);drum('snare',at+(b+.5)*BEAT,.45);drum('hat',at+(b+.5)*BEAT,.45);
+  }
+  nortenaTune[bar].forEach(([beat,n,length],k)=>{const time=at+beat*BEAT,len=length*BEAT;voice('reed',n,time,len,k===0?.063:.052,.12);voice('reed',scaleThird[n],time+.012,len,.025,-.12);});
+  // Soft glass ticks coincide with the chosen bottle's two rocking accents.
+  const block=index*16+bar,id=bottleChoice(block);for(const offset of [.5,1])voice('glass',91+id*2,at+offset*BEAT,.055,.010,.25+id*.10);
+ }
+}
+// Eight-bar original country shuffle in C: alternating bass, short strums,
+// pentatonic melody, and gentle chip-string bends.
+const countryChords=[[48,52,55],[48,52,55],[53,57,60],[48,52,55],[55,59,62],[53,57,60],[48,52,55],[55,59,62]];
+const countryTune=[
+ [[0,64,.8],[1,67,.45],[1.66,69,.35],[2,67,1.1],[3.66,64,.25]],
+ [[0,60,1.3],[1.66,62,.4],[2.66,64,.85]],
+ [[0,65,.8],[1,69,.45],[1.66,72,.35],[2,69,1],[3.66,67,.25]],
+ [[0,64,1.1],[1.66,62,.45],[2.66,60,.9]],
+ [[0,62,.8],[1,67,.45],[1.66,69,.35],[2,67,1.1],[3.66,62,.25]],
+ [[0,65,.8],[1,64,.45],[1.66,62,.35],[2.66,60,.9]],
+ [[0,64,.8],[1,67,.45],[1.66,69,.35],[2.66,67,.9]],
+ [[0,62,.8],[1,64,.45],[1.66,62,.35],[2.66,60,1.0]]
+];
+function scheduleCountry(index){const origin=startTime+index*LOOP;for(let bar=0;bar<8;bar++){
+ const at=origin+bar*4*BEAT,chord=countryChords[bar];
+ for(let b=0;b<4;b++){
+  voice('bass',chord[0]-12+(b%2?7:0),at+b*BEAT,BEAT*.6,.145,-.10);
+  if(b===1||b===3)chord.forEach((n,k)=>voice('strum',n,at+b*BEAT+k*.012,BEAT*.28,.027,-.25));
+  if(b===0||b===2)drum('kick',at+b*BEAT,.5);else drum('snare',at+b*BEAT,.40);
+  drum('hat',at+(b+.66)*BEAT,.42);
+ }
+ countryTune[bar].forEach(([beat,n,length])=>voice('twang',n,at+beat*BEAT,length*BEAT,.086,.12));
+ if(bar%2===1)voice('twang',countryTune[bar][0][1]+12,at,BEAT*.8,.017,.30);
+}}
+function scheduleLoop(index){if(mode==='nortena')scheduleNortena(index);else if(mode==='country')scheduleCountry(index);else scheduleJazz(index);}
+function updateModes(){for(const id of Object.keys(modes))document.getElementById(id+'-mode').setAttribute('aria-pressed',String(running&&mode===id));}
+function scheduler(){if(!running)return;while(startTime+nextLoop*LOOP<ac.currentTime+.3){scheduleLoop(nextLoop++);}}
+async function begin(){if(!ac)audioInit();await ac.resume();if(!started){started=true;startTime=ac.currentTime+.1;nextLoop=0;}running=true;scheduler();clearInterval(timer);timer=setInterval(scheduler,100);root.classList.add('playing');play.textContent='Ⅱ Pause';status.textContent=modes[mode].name+' is playing. Tap the same scene to stop.';updateModes();document.getElementById('portrait').setAttribute('aria-label','Tap candles for jazz, bottles for norteña, or glasses for country; tap the active scene to stop');setVolume();}
+function firstReaction(){reaction=ac.currentTime;sparkTime=startTime+BEAT;voice('lead',79,sparkTime,.22,.025,.15);events.push({tap:reaction,accent:sparkTime});if(events.length>20)events.shift();}
+async function stop(){running=false;started=false;clearInterval(timer);const old=ac;if(master)master.disconnect();ac=null;bus=null;master=null;noise=null;startTime=0;nextLoop=0;reaction=-100;sparkTime=-100;lastAutoMoment=-1;root.classList.remove('playing');play.textContent='▶ Start '+modes[mode].name;updateModes();status.textContent='Stopped. Tap a scene to start from the beginning.';document.getElementById('portrait').setAttribute('aria-label','Tap candles for jazz, bottles for norteña, or glasses for country');ctx.clearRect(0,0,1091,1442);if(old)old.close().catch(console.error);}
+async function trigger(requested=mode){if(!ready||controlBusy)return;controlBusy=true;try{if(running&&requested===mode){await stop();return;}if(started)await stop();mode=requested;BPM=modes[mode].bpm;BEAT=60/BPM;LOOP=32*BEAT;await begin();firstReaction();}catch(e){status.textContent='Audio could not start. Tap Start to try again.';console.error(e);}finally{controlBusy=false;}}
+async function toggle(){if(!ready||controlBusy)return;if(!started){await trigger();return;}controlBusy=true;try{if(running){running=false;clearInterval(timer);await ac.suspend();play.textContent='▶ Resume';updateModes();status.textContent='Paused. Resume here, or tap a scene to restart.';document.getElementById('portrait').setAttribute('aria-label','Tap a scene to restart its music from the beginning');}else{await begin();}}finally{controlBusy=false;}}
+function setVolume(){if(master)master.gain.setTargetAtTime(muted?0:Number(volume.value)/100,ac.currentTime,.025);}
+play.addEventListener('click',toggle);document.getElementById('portrait').addEventListener('click',e=>{let requested=mode;if(e&&e.detail){const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*1091,y=(e.clientY-r.top)/r.height*1442;if(x>225&&x<350&&y>530&&y<660)requested='country';else if((x>850&&y>720&&y<960)||(x>800&&y>160&&y<575))requested='nortena';else if(candles.some(c=>Math.abs(x-c.x)<65&&Math.abs(y-c.y)<75))requested='jazz';}return trigger(requested);});for(const id of Object.keys(modes))document.getElementById(id+'-mode').addEventListener('click',()=>trigger(id));mute.addEventListener('click',()=>{muted=!muted;mute.textContent=muted?'Unmute':'Mute';mute.setAttribute('aria-pressed',String(muted));setVolume();});volume.addEventListener('input',setVolume);
+compare.addEventListener('click',()=>{original=!original;compare.textContent=original?'Show animation':'Show original';compare.setAttribute('aria-pressed',String(original));});
+// Darken the existing artwork through feathered pixel masks. No pixel readback:
+// this also works when portrait.png is opened directly from the local filesystem.
+const candles=[{x:196,y:526,rx:24,ry:34,reflection:[213,577,25,37],offset:0},{x:1038,y:741,rx:26,ry:36,reflection:[1020,795,24,38],offset:2},{x:113,y:354,rx:16,ry:20,reflection:[109,378,18,15],offset:1},{x:21,y:416,rx:16,ry:20,reflection:[18,443,18,18],offset:3}];
+function makeMask(x,y,rx,ry){
+ const off=document.createElement('canvas');off.width=1091;off.height=1442;const c=off.getContext('2d');
+ const shape=document.createElement('canvas');shape.width=1091;shape.height=1442;const s=shape.getContext('2d');
+ for(let py=Math.floor((y-ry)/4)*4;py<y+ry;py+=4)for(let px=Math.floor((x-rx)/4)*4;px<x+rx;px+=4){const radius=Math.hypot((px+2-x)/rx,(py+2-y)/ry);const alpha=1-smooth(.5,1,radius);if(alpha>0){s.fillStyle=`rgba(0,0,0,${alpha})`;s.fillRect(px,py,4,4);}}
+ c.drawImage(art,0,0);c.globalCompositeOperation='source-atop';c.fillStyle='rgba(35,12,2,.78)';c.fillRect(0,0,1091,1442);c.globalCompositeOperation='destination-in';c.drawImage(shape,0,0);c.globalCompositeOperation='source-over';return off;
+}
+// Generated bottle atlas, placed along the counter's rising isometric edge.
+// Bases are anchors: only the selected bottle rocks/lifts; shelves stay intact.
+const bottles=[
+ {name:'emerald',crop:[148,93,262,834],base:[890,922],w:44,h:140,label:[.10,.48,.61,.34]},
+ {name:'rose',crop:[581,133,343,782],base:[948,892],w:60,h:136,label:[.14,.50,.74,.34]},
+ {name:'amber',crop:[1053,194,399,741],base:[1008,862],w:69,h:128,label:[.14,.50,.76,.37]}
+];
+// Three tilted tint states: the moving boundary makes the bottle's darker
+// liquid visible above its label; the bright label and edge highlights are protected.
+function prepareBottles(){for(const b of bottles){b.liquidSprites=[];const w=Math.round(b.w/3),h=Math.round(b.h/3);for(const tilt of [-1,0,1]){
+ const sprite=document.createElement('canvas');sprite.width=w;sprite.height=h;const c=sprite.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(bottleArt,...b.crop,0,0,w,h);
+ c.save();c.beginPath();c.moveTo(w*.14,h*(.40+tilt*.075));c.lineTo(w*.90,h*(.40-tilt*.075));c.lineTo(w*.90,h*.94);c.lineTo(w*.14,h*.94);c.closePath();c.rect(b.label[0]*w,b.label[1]*h,b.label[2]*w,b.label[3]*h);c.clip('evenodd');c.globalCompositeOperation='source-atop';c.fillStyle='rgba(32,9,27,.38)';c.fillRect(0,0,w,h);c.restore();b.liquidSprites.push(sprite);
+}b.sprite=b.liquidSprites[1];}}
+function drawBottles(t){
+ const dancing=started&&mode==='nortena',beat=dancing?Math.max(0,(t-startTime)/BEAT):0,block=Math.floor(beat/2),age=beat-block*2,id=bottleChoice(block);
+ for(let i=bottles.length-1;i>=0;i--){const b=bottles[i],[x,y]=b.base,env=dancing&&i===id&&age<1.7?Math.sin(Math.PI*age/1.7):0,amount=reduced?.3:1;
+  const angle=Math.sin(age*Math.PI*4)*.10*env*amount,dx=Math.round(Math.sin(age*Math.PI*3)*4*env*amount),lift=Math.round(env*5*amount);
+  ctx.save();ctx.globalAlpha=.24;ctx.fillStyle='#28130d';ctx.beginPath();ctx.ellipse(x+4,y+1,b.w*.56,7,-.45,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.imageSmoothingEnabled=false;ctx.translate(x+dx,y-lift);ctx.rotate(angle);const tilt=env>.05?Math.sign(Math.cos(age*Math.PI*4)):0;ctx.drawImage(b.liquidSprites[tilt+1],-b.w/2,-b.h,b.w,b.h);ctx.restore();
+ }
+}
+const glasses=[{crop:[182,168,513,635],base:[252,587],w:52,h:64},{crop:[891,168,513,635],base:[322,628],w:52,h:64}];
+function prepareGlasses(){for(const g of glasses){g.states=[];const w=Math.round(g.w/3),h=Math.round(g.h/3);for(const tilt of [-1,0,1]){
+ const sprite=document.createElement('canvas');sprite.width=w;sprite.height=h;const c=sprite.getContext('2d');c.imageSmoothingEnabled=false;
+ // Liquid is drawn under the empty glass artwork, with three stepped surface slopes.
+ for(let x=Math.ceil(w*.15);x<w*.85;x++){const top=Math.round(h*.45+tilt*(x-w*.5)*.26);c.fillStyle='#783518';c.globalAlpha=.95;c.fillRect(x,top,1,Math.round(h*.78)-top);c.fillStyle='#f7c66c';c.fillRect(x,top,1,1);}c.globalAlpha=1;c.drawImage(glassArt,...g.crop,0,0,w,h);g.states.push(sprite);
+}}}
+function glassMotion(t,i){if(!started||mode!=='country')return {dx:0,dy:0,tilt:0};const beat=Math.max(0,(t-startTime)/BEAT),phase=beat*Math.PI/4+i*Math.PI,amount=(reduced?.25:1)*smooth(0,1,beat),dx=Math.round(Math.sin(phase)*8*amount),velocity=Math.cos(phase);return {dx,dy:Math.round(dx*.56),tilt:Math.abs(velocity)<.35?0:Math.sign(velocity)};}
+function drawGlasses(t){for(let i=0;i<glasses.length;i++){const g=glasses[i],m=glassMotion(t,i),x=g.base[0]+m.dx,y=g.base[1]+m.dy;ctx.save();ctx.globalAlpha=.26;ctx.fillStyle='#28130d';ctx.beginPath();ctx.ellipse(x+3,y,g.w*.48,6,.48,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.imageSmoothingEnabled=false;ctx.drawImage(g.states[m.tilt+1],x-g.w/2,y-g.h,g.w,g.h);ctx.restore();}}
+function prepare(){if(ready||!art.complete||!art.naturalWidth||!bottleArt.complete||!bottleArt.naturalWidth||!glassArt.complete||!glassArt.naturalWidth)return;prepareBottles();prepareGlasses();for(const c of candles)masks.push({light:makeMask(c.x,c.y,c.rx,c.ry),reflection:makeMask(...c.reflection)});ready=true;draw();}
+function smooth(a,b,x){const v=Math.max(0,Math.min(1,(x-a)/(b-a)));return v*v*(3-2*v);}
+function blush(x,y,strength){ctx.globalAlpha=strength;ctx.fillStyle='#f57da0';ctx.fillRect(x+4,y,12,3);ctx.fillRect(x,y+3,20,5);ctx.fillRect(x+4,y+8,12,3);ctx.fillStyle='#ffacc1';ctx.fillRect(x+4,y+3,8,3);}
+function sparkle(x,y,phase){if(phase<=0||phase>=1)return;const k=Math.sin(phase*Math.PI),s=k>.65?4:3;ctx.globalAlpha=k;ctx.fillStyle='#ffb958';ctx.fillRect(x-2*s,y-s/2,4*s,s);ctx.fillRect(x-s/2,y-2*s,s,4*s);ctx.fillStyle='#fff2c3';ctx.fillRect(x-s,y-s,2*s,2*s);ctx.fillStyle='#fffbea';ctx.fillRect(x-2,y-2,4,4);if(k>.75){ctx.globalAlpha=(k-.75)*2;ctx.fillRect(x+13,y-12,3,3);}}
+const flickerPattern=[0,1,0,1,0,0,1,1,0,1,1,0,0,1,0,1];
+function candleDim(t,offset=0){if(mode!=='jazz')return 0;const beat=Math.max(0,(t-startTime)/BEAT)/(reduced?4:1),step=Math.floor(beat),phase=beat-step;const current=flickerPattern[(step+offset)%16],previous=flickerPattern[(step+offset+15)%16];const state=previous+(current-previous)*smooth(0,reduced?.35:.12,phase);return .035+state*(reduced?.40:.61);}
+function recurringMoment(t){const beat=(t-startTime)/BEAT,spacing=modes[mode].faceBeats*(reduced?2:1);if(beat<spacing)return;const moment=Math.floor(beat/spacing);if(moment<=lastAutoMoment)return;lastAutoMoment=moment;const at=startTime+moment*spacing*BEAT;if(t-at>.25||at-reaction<3.2)return;reaction=at;sparkTime=at+BEAT;}
+function renderAt(t){ctx.clearRect(0,0,1091,1442);if(!original){drawBottles(t);drawGlasses(t);}if(!started)return;
+ if(running)recurringMoment(t);if(original)return;
+ if(mode==='jazz')masks.forEach((mask,i)=>{const dim=candleDim(t,candles[i].offset);ctx.globalAlpha=dim;ctx.drawImage(mask.light,0,0);ctx.globalAlpha=dim*.48;ctx.drawImage(mask.reflection,0,0);});ctx.globalAlpha=1;
+ const age=t-reaction,strength=smooth(0,.65,age)*(1-smooth(1.6,3.1,age))*.82;
+ if(strength>.001){blush(549,672,strength);blush(601,673,strength*.92);}
+ ctx.globalAlpha=1;sparkle(489,618,(t-sparkTime)/.85);ctx.globalAlpha=1;
+}
+function draw(){const t=ac?ac.currentTime:0;renderAt(t);const beat=started?(t-startTime)/BEAT:0;document.querySelectorAll('.eq i').forEach((el,i)=>el.style.height=running?`${4+Math.round((.5+.5*Math.sin(beat*3.14+i*1.8))*8)}px`:'3px');requestAnimationFrame(draw);}
+art.addEventListener('load',prepare,{once:true});bottleArt.addEventListener('load',prepare,{once:true});glassArt.addEventListener('load',prepare,{once:true});glassArt.addEventListener('error',()=>{status.textContent='The glass artwork could not load. Keep glasses-atlas.png beside this page.';});bottleArt.addEventListener('error',()=>{status.textContent='The bottle artwork could not load. Keep bottles-atlas.png beside this page.';});prepare();
+document.addEventListener('visibilitychange',async()=>{if(document.hidden&&running){running=false;clearInterval(timer);await ac.suspend();play.textContent='▶ Resume';updateModes();status.textContent='Paused while away. Resume when you’re ready.';}});
+window.jazzTrial={getState:()=>({ready,started,running,muted,original,mode,bottleCount:bottles.length,glassCount:glasses.length,glassMotion:glasses.map((g,i)=>glassMotion(ac?.currentTime||0,i)),bpm:BPM,reaction,sparkTime,candleLevels:candles.map(c=>candleDim(ac?.currentTime||0,c.offset)),loopSeconds:LOOP,audioTime:ac?.currentTime||0,startTime,events}),previewReaction:(age)=>{reaction=0;sparkTime=BEAT;renderAt(age);},renderAudio:async()=>{const saved={ac,bus,noise,startTime};const offline=new OfflineAudioContext(2,Math.ceil((LOOP+.5)*44100),44100);ac=offline;bus=offline.createGain();bus.gain.value=.5;bus.connect(offline.destination);noise=offline.createBuffer(1,44100,44100);let seed=31;let d=noise.getChannelData(0);for(let i=0;i<d.length;i++){seed=(seed*16807)%2147483647;d[i]=seed/2147483647*2-1;}startTime=.05;scheduleLoop(0);({ac,bus,noise,startTime}=saved);return offline.startRendering();}};
+})();
+</script></body></html>
